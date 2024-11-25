@@ -1,0 +1,56 @@
+version: '3'
+
+env:
+  JQ: docker run --rm -i ghcr.io/jqlang/jq:1.7
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  # nektos/act
+  act:push:
+    desc: Test release
+    cmds:
+      - act push {{.CLI_ARGS}}
+
+  act:push:version:
+    desc: Test release for specific version
+    summary: |
+      Example:
+
+      task act pv="8.4.1"
+    vars:
+      PHP_VERSIONS: '{{ .pv | default "8.4.1"}}'
+    cmds:
+      - act push --input version={{.PHP_VERSIONS}}
+
+  act:job:prepare:
+    desc: Act test "prepare" job
+    cmds:
+      - act -j prepare {{.CLI_ARGS}}
+
+  act:job:build:
+    desc: Act test "build" job
+    cmds:
+      - act -j build {{.CLI_ARGS}}
+
+  act:job:merge:
+    desc: Act test "merge" job
+    cmds:
+      - act -j merge {{.CLI_ARGS}}
+
+  # buildx bake
+  bake:
+    desc: Bake
+    vars:
+      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.1"}}'
+    cmds:
+      - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake
+
+  bake:print:
+    desc: Bake print options without building
+    vars:
+      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.1"}}'
+    cmds:
+      - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake --print | $JQ

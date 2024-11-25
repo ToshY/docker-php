@@ -1,0 +1,294 @@
+name: Release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'PHP version'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
+      force:
+        type: choice
+        description: 'Force recreate images'
+        required: false
+        default: 'false'
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  PHP_VERSIONS: '8.1,8.2,8.3,8.4'
+  GHCR_SLUG: ghcr.io/toshy/php
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      variants: ${{ steps.matrix.outputs.variants }}
+      platforms: ${{ steps.matrix.outputs.platforms }}
+      targets: ${{ steps.matrix.outputs.targets }}
+      flavors: ${{ steps.matrix.outputs.flavors }}
+      metadata: ${{ steps.matrix.outputs.metadata }}
+      php_versions: ${{ steps.check_image.outputs.php_versions }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skopeo
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.17.0/skopeo-linux-amd64'
+          name: 'skopeo'
+          version: 'v1.17.0'
+
+      - name: Get PHP versions
+        id: check_version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ] && [ "${{ github.event.inputs.version }}" != "all" ]; then
+            echo "PHP 'version' set to '${{ github.event.inputs.version }}'."
+            SELECTED_PHP_VERSIONS=(${{ github.event.inputs.VERSION }})
+          else
+            echo "PHP 'version' set to '${{ env.PHP_VERSIONS }}' (default)."
+            IFS=',' read -ra SELECTED_PHP_VERSIONS <<< "${{ env.PHP_VERSIONS }}"
+          fi
+
+          PHP_VERSIONS=()
+          for pv in ${SELECTED_PHP_VERSIONS[@]}; do
+            PHP_VERSIONS+=($(skopeo inspect "docker://docker.io/library/php:$pv" --override-os linux --override-arch amd64 | jq -r '.Env[] | select(test("^PHP_VERSION=")) | sub("^PHP_VERSION="; "")'))
+          done
+
+          CONCATENATED_PHP_VERSIONS="$(printf "%s," "${PHP_VERSIONS[@]}" | cut -d "," -f 1-${#PHP_VERSIONS[@]})"
+          echo "Images will be build for the following versions: '$CONCATENATED_PHP_VERSIONS'."
+
+          {
+            echo php_versions=$CONCATENATED_PHP_VERSIONS
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Check if PHP images already exists
+        id: check_image
+        env:
+          GHCR_SLUG: ${{ env.GHCR_SLUG }}
+        run: |
+          # Retrieve current registry tags
+          ENCODED_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${ENCODED_TOKEN}" https://ghcr.io/v2/${GHCR_SLUG#ghcr.io/}/tags/list)
+
+          # In case of a new GitHub repository, or has registry but without any tags without any tags yet
+          if echo "$RESPONSE" | jq -e '.errors' >/dev/null 2>&1 || echo "$RESPONSE" | jq -e '.tags == null' >/dev/null 2>&1; then
+            if echo "$RESPONSE" | jq -e '.errors' >/dev/null 2>&1; then
+              MESSAGE=$(echo "$RESPONSE" | jq -e '.errors[0].message')
+            else
+              MESSAGE=$(echo "$RESPONSE" | jq -e '.tags // "empty"')
+            fi
+          
+            echo "No tags found (Response: $MESSAGE). Proceed to build step."
+          
+            # Re-export php_versions
+            {
+              echo php_versions=${{ steps.check_version.outputs.php_versions }}
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # Current released php versions from GitHub packages
+          PACKAGE_PHP_VERSIONS=$(echo "$RESPONSE" | jq -r '.tags[]' | grep -oP '^\d+(\.\d+){0,2}(?=-)' | sort -uV | jq -R . | jq -s .)
+
+          # Check which PHP tags already exists; remove already existing ones from list if "force" input was not provided
+          CURRENT_PHP_VERSIONS=${{ steps.check_version.outputs.php_versions }}
+          IFS=',' read -ra PHP_VERSIONS_ARRAY <<< "${{ steps.check_version.outputs.php_versions }}"
+          for pv in ${PHP_VERSIONS_ARRAY[@]}; do
+            TAG_EXISTS=$(echo "$PACKAGE_PHP_VERSIONS" | jq 'index("'"$pv"'") != null')
+            if [ "$TAG_EXISTS" = "true" ]; then
+              if [ "${{ github.event.inputs.force }}" == "true" ]; then
+                echo "Image with tag '$pv' already exists. Force build step."
+              else
+                echo "Image with tag '$pv' already exists. Skip build step for specific tag."
+                CURRENT_PHP_VERSIONS=$(echo "$CURRENT_PHP_VERSIONS" | sed "s/,${pv}//;s/${pv},//;s/^${pv}$//")
+              fi
+            else
+              echo "Image with tag '$pv' not found. Proceed to build step."
+            fi
+          done
+
+          # Re-export php_versions
+          {
+            echo php_versions=$(echo "$CURRENT_PHP_VERSIONS" | xargs)
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Docker Buildx
+        if: ${{ steps.check_image.outputs.php_versions != ''}}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create variants matrix
+        if: ${{ steps.check_image.outputs.php_versions != ''}}
+        id: matrix
+        shell: bash
+        run: |
+          METADATA="$(docker buildx bake --print | jq -c)"
+          FLAVORS="$(jq -c '.group.default.targets|map(split("-")[-3])|unique' <<< "${METADATA}")"
+          TARGETS="$(jq -c '.group.default.targets|map(split("-")[-1])|unique' <<< "${METADATA}")"
+          _FORMATTED_TARGETS="$(jq -cr 'map("-" + split("-")[0])|join("|")' <<< "${TARGETS}")"
+          VARIANTS="$(jq -c ".group.default.targets|map(sub(\"$_FORMATTED_TARGETS\"; \"\"))|unique" <<< "${METADATA}")"
+          PLATFORMS="$(jq -c 'first(.target[]) | .platforms' <<< "${METADATA}")"
+          {
+            echo metadata="$METADATA"
+            echo targets="$TARGETS"
+            echo flavors="$FLAVORS"
+            echo variants="$VARIANTS"
+            echo platforms="$PLATFORMS"
+          } >> "${GITHUB_OUTPUT}"
+        env:
+          SHA: ${{ github.sha }}
+          VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || steps.check.outputs.ref || github.event.repository.default_branch }}
+          PHP_VERSIONS: ${{ steps.check_image.outputs.php_versions }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+    if: ${{ needs.prepare.outputs.php_versions != '' }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
+        platform: ${{ fromJson(needs.prepare.outputs.platforms) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build images and push
+        id: bake
+        uses: docker/bake-action@v5
+        with:
+          targets: |
+            ${{ matrix.variant }}-base
+            ${{ matrix.variant }}-ffmpeg
+          provenance: true
+          push: ${{ github.event_name != 'pull_request' }}
+          set: |
+            *.tags=
+            *.platform=${{ matrix.platform }}
+            ${{ matrix.variant }}-base.cache-from=type=gha,scope=${{ matrix.variant }}-base-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
+            ${{ matrix.variant }}-base.cache-to=type=gha,scope=${{ matrix.variant }}-base-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }},ignore-error=true
+            ${{ matrix.variant }}-ffmpeg.cache-from=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
+            ${{ matrix.variant }}-ffmpeg.cache-to=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }},ignore-error=true
+            *.output=type=image,"name=${{ env.GHCR_SLUG }}",push-by-digest=true,name-canonical=true
+        env:
+          SHA: ${{ github.sha }}
+          VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || steps.check.outputs.ref || github.event.repository.default_branch }}
+          PHP_VERSIONS: ${{ needs.prepare.outputs.php_versions }}
+
+      # Workaround for https://github.com/actions/runner/pull/2477#issuecomment-1501003600
+      - name: Export digests
+        run: |
+          TARGETS=($(echo '${{ needs.prepare.outputs.targets }}' | jq -r '.[]'))
+          for tgt in "${TARGETS[@]}"; do
+            mkdir -p "/tmp/digest/$tgt"
+            targetDigest=$(jq -r ".\"${{ matrix.variant }}-$tgt\".\"containerimage.digest\"" <<< "${METADATA}")
+            echo "Digest for $tgt: ${targetDigest#sha256:}"
+            touch "/tmp/digest/$tgt/${targetDigest#sha256:}"
+          done
+        env:
+          METADATA: ${{ steps.bake.outputs.metadata }}
+
+      - name: Prepare path safe platform name
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: Upload base digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.variant }}-base-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digest/base/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload ffmpeg digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.variant }}-ffmpeg-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digest/ffmpeg/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    needs:
+      - prepare
+      - build
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
+        target: ${{ fromJson(needs.prepare.outputs.targets) }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digest
+          pattern: digest-${{ matrix.variant }}-${{ matrix.target }}-*
+          merge-multiple: true
+
+      - name: Display structure of downloaded files
+        run: ls -R /tmp/digest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digest
+        run: |
+          # shellcheck disable=SC2046,SC2086
+          docker buildx imagetools create $(jq -cr '.target."${{ matrix.variant }}-${{ matrix.target }}".tags|map(select(startswith("${{ env.GHCR_SLUG }}"))| "-t " + .)|join(" ")' <<< ${METADATA}) \
+            $(printf "${{ env.GHCR_SLUG }}@sha256:%s " *)
+        env:
+          METADATA: ${{ needs.prepare.outputs.metadata }}
+
+      - name: Inspect image
+        run: |
+          # shellcheck disable=SC2046,SC2086
+          docker buildx imagetools inspect $(jq -cr '.target."${{ matrix.variant }}-${{ matrix.target }}".tags|first' <<< ${METADATA})
+        env:
+          METADATA: ${{ needs.prepare.outputs.metadata }}
