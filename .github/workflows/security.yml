@@ -2,44 +2,25 @@ name: Security Check
 
 on:
   schedule:
-    - cron: '0 5 1,8,15,22 * *'
+    - cron: '30 4 * * *'
   workflow_dispatch:
 
-env:
-  BASE_IMAGE: ghcr.io/toshy/php:fpm-bookworm
-  FFMPEG_IMAGE: ghcr.io/toshy/php:fpm-bookworm-ffmpeg
-
 jobs:
-  check:
-    name: Image security check
+  scan:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - ghcr.io/toshy/php:fpm-bookworm
+          - ghcr.io/toshy/php:fpm-bookworm-ffmpeg
     steps:
-      - name: Base - Unknown, Low, Medium and High Severity
-        uses: aquasecurity/trivy-action@0.29.0
+      - name: Scan for vulnerabilities
+        uses: crazy-max/ghaction-container-scan@v3
         with:
-          image-ref: ${{ env.BASE_IMAGE }}
-          severity: UNKNOWN,LOW,MEDIUM,HIGH
-          exit-code: 0
-
-      - name: Base - Critical Severity
-        uses: aquasecurity/trivy-action@0.29.0
-        with:
-          image-ref: ${{ env.BASE_IMAGE }}
-          ignore-unfixed: true
-          severity: CRITICAL
-          exit-code: 1
-
-      - name: FFmpeg - Unknown, Low, Medium and High Severity
-        uses: aquasecurity/trivy-action@0.29.0
-        with:
-          image-ref: ${{ env.FFMPEG_IMAGE }}
-          severity: UNKNOWN,LOW,MEDIUM,HIGH
-          exit-code: 0
-
-      - name: FFmpeg - Critical Severity
-        uses: aquasecurity/trivy-action@0.29.0
-        with:
-          image-ref: ${{ env.FFMPEG_IMAGE }}
-          ignore-unfixed: true
-          severity: CRITICAL
-          exit-code: 1
+          image: ${{ matrix.image }}
+          severity_threshold: CRITICAL
+          annotations: true
+        env:
+          TRIVY_TIMEOUT: 5m
+          TRIVY_IGNORE_UNFIXED: true
