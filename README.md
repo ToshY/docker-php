@@ -8,7 +8,7 @@
 
 ## 📦 Images
 
-All images can be pulled from [ghcr.io/toshy/php](ghcr.io/toshy/php).
+All images can be pulled from [ghcr.io/toshy/php](https://ghcr.io/toshy/php).
 
 ## 🐳 Dockerfile
 
