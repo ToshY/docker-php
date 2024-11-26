@@ -12,7 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - ghcr.io/toshy/php:8.1-fpm-bookworm
+          - ghcr.io/toshy/php:8.2-fpm-bookworm
+          - ghcr.io/toshy/php:8.3-fpm-bookworm
           - ghcr.io/toshy/php:fpm-bookworm
+          - ghcr.io/toshy/php:8.1-fpm-bookworm-ffmpeg
+          - ghcr.io/toshy/php:8.2-fpm-bookworm-ffmpeg
+          - ghcr.io/toshy/php:8.3-fpm-bookworm-ffmpeg
           - ghcr.io/toshy/php:fpm-bookworm-ffmpeg
     steps:
       - name: Scan for vulnerabilities
