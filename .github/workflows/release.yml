@@ -35,7 +35,7 @@ env:
 
 jobs:
   prepare:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       variants: ${{ steps.matrix.outputs.variants }}
       platforms: ${{ steps.matrix.outputs.platforms }}
@@ -156,7 +156,7 @@ jobs:
           PHP_VERSIONS: ${{ steps.check_image.outputs.php_versions }}
 
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     needs:
       - prepare
     if: ${{ needs.prepare.outputs.php_versions != '' }}
@@ -172,9 +172,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -188,7 +185,7 @@ jobs:
 
       - name: Build images and push
         id: bake
-        uses: docker/bake-action@v5
+        uses: docker/bake-action@v6
         with:
           targets: |
             ${{ matrix.variant }}-base
@@ -242,7 +239,7 @@ jobs:
           retention-days: 1
 
   merge:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event_name != 'pull_request'
     needs:
       - prepare

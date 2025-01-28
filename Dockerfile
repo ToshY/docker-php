@@ -24,7 +24,8 @@ RUN <<EOT sh
         sysvsem-stable \
         amqp-stable \
         redis-stable \
-        pcntl-stable
+        pcntl-stable \
+        bcmath-stable
   apt-get update
   apt-get install -y libexpat1=2.5.0-1+deb12u1 libgstreamer1.0-0=1.22.0-2+deb12u1
 EOT
