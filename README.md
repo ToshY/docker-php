@@ -37,6 +37,7 @@ sysvsem-stable
 amqp-stable
 redis-stable
 pcntl-stable
+bcmath-stable
 ```
 
 #### Working directory
