@@ -10,21 +10,21 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN <<EOT sh
   set -ex
-  install-php-extensions mysqli-stable \
-        pdo_mysql-stable \
-        exif-stable \
-        ftp-stable \
-        gd-stable \
-        imap-stable \
-        opcache-stable \
-        soap-stable \
-        zip-stable \
-        intl-stable \
-        gettext-stable \
-        sysvsem-stable \
-        amqp-stable \
-        redis-stable \
-        pcntl-stable
+  install-php-extensions mysqli \
+        pdo_mysql \
+        exif \
+        ftp \
+        gd \
+        imap \
+        opcache \
+        soap \
+        zip \
+        intl \
+        gettext \
+        sysvsem \
+        amqp \
+        redis \
+        pcntl
   apt-get update
   apt-get install -y libexpat1=2.5.0-1+deb12u1 libgstreamer1.0-0=1.22.0-2+deb12u1
 EOT
