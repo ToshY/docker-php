@@ -4,7 +4,7 @@ LABEL maintainer="ToshY (github.com/ToshY)"
 
 COPY --from=ghcr.io/composer/docker:2.8 /usr/bin/composer /usr/local/bin/composer
 
-COPY --from=ghcr.io/mlocati/php-extension-installer:2.7 /usr/bin/install-php-extensions /usr/local/bin/
+COPY --from=ghcr.io/mlocati/php-extension-installer:2.8 /usr/bin/install-php-extensions /usr/local/bin/
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
