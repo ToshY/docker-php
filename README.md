@@ -16,7 +16,7 @@ All images can be pulled from [ghcr.io/toshy/php](https://ghcr.io/toshy/php).
 
 ```text
 composer:2.8
-mlocati/php-extension-installer:2.7.0
+mlocati/php-extension-installer:2.8
 ```
 
 #### PHP extensions
