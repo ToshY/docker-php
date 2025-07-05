@@ -53,7 +53,8 @@ RUN <<EOT sh
       unzip \
       ffmpeg \
       mkvtoolnix \
-      libimage-exiftool-perl
+      libimage-exiftool-perl \
+      libjxl0.7=0.7.0-10+deb12u1
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
