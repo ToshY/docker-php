@@ -44,13 +44,13 @@ tasks:
   bake:
     desc: Bake
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.1"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.10"}}'
     cmds:
       - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake
 
   bake:print:
     desc: Bake print options without building
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.1"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.1.20,8.2.26,8.3.5,8.4.10"}}'
     cmds:
       - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake --print | $JQ

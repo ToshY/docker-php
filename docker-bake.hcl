@@ -20,16 +20,41 @@ variable DEFAULT_PHP_VERSION {
     default = "8.4"
 }
 
+variable "PHP_OS_MAP" {
+    default = {
+        "8.1" = "bookworm"
+        "8.2" = "bookworm"
+        "8.3" = "bookworm"
+        "8.4" = "bookworm"
+        "8.5" = "bookworm"
+    }
+}
+
 function "tag" {
     params = [registry, php-version, os, target, php-flavor]
     result = [
         // Tag "${php-version}-${php-flavor}-${os}-${target}"
         "${registry}/${REPOSITORY_IMAGE}:${php-version}-${php-flavor}-${os}${target == "base" ? "" : "-${target}"}",
         // Tag "latest"
-        php-version == DEFAULT_PHP_VERSION && os == "bookworm" && target == "base" ? "${registry}/${REPOSITORY_IMAGE}:latest" : "",
+        php-version == DEFAULT_PHP_VERSION && target == "base" ? "${registry}/${REPOSITORY_IMAGE}:latest" : "",
         // Tag "${php-flavor}-${os}-${target}"
         php-version == DEFAULT_PHP_VERSION ? "${registry}/${REPOSITORY_IMAGE}:${php-flavor}-${os}${target == "base" ? "" : "-${target}"}" : "",
     ]
+}
+
+function "os_for_php_version" {
+    params = [v]
+    result = lookup(PHP_OS_MAP, php_major_minor(v), "bookworm")
+}
+
+function "php_major_minor" {
+    params = [v]
+    result = _parse_php_major_minor(v, regexall("(?P<major>\\d+)\\.(?P<minor>\\d+)", v)[0])
+}
+
+function "_parse_php_major_minor" {
+    params = [v, m]
+    result = "${m.major}.${m.minor}"
 }
 
 function "php_version" {
@@ -43,14 +68,11 @@ function "_php_version" {
 }
 
 target "default" {
-    name = "php-${replace(php-version, ".", "-")}-${php-flavor}-${os}-${tgt}"
+    name = "php-${replace(php-version, ".", "-")}-${php-flavor}-${os_for_php_version(php-version)}-${tgt}"
     matrix = {
         php-version = split(",", PHP_VERSIONS)
         php-flavor = [
             "fpm"
-        ]
-        os = [
-            "bookworm"
         ]
         tgt = [
             "base",
@@ -58,7 +80,7 @@ target "default" {
         ]
     }
     contexts = {
-        php-base = "docker-image://php:${php-version}-${php-flavor}-${os}"
+        php-base = "docker-image://php:${php-version}-${php-flavor}-${os_for_php_version(php-version)}"
     }
     dockerfile = "Dockerfile"
     context = "./"
@@ -75,7 +97,7 @@ target "default" {
             [
                 for registry in split(",", REGISTRY_USERS) :
                 flatten([
-                    tag(registry, pv, os, tgt, php-flavor),
+                    tag(registry, pv, os_for_php_version(php-version), tgt, php-flavor),
                 ])
             ]
         ])))
