@@ -16,35 +16,57 @@ variable "PHP_VERSIONS" {
     default = "8.1,8.2,8.3,8.4"
 }
 
-variable DEFAULT_PHP_VERSION {
+variable "DEFAULT_PHP_VERSION" {
     default = "8.4"
+}
+
+variable "DEFAULT_FLAVOR" {
+    default = "fpm"
+}
+
+variable "DEFAULT_OS" {
+    default = "bookworm"
+}
+
+variable "DEFAULT_TARGET" {
+    default = "base"
 }
 
 variable "PHP_OS_MAP" {
     default = {
-        "8.1" = "bookworm"
-        "8.2" = "bookworm"
-        "8.3" = "bookworm"
-        "8.4" = "bookworm"
-        "8.5" = "bookworm"
+        "8.1" = "bookworm,alpine"
+        "8.2" = "bookworm,alpine"
+        "8.3" = "bookworm,alpine"
+        "8.4" = "bookworm,alpine"
+        "8.5" = "bookworm,alpine"
     }
+}
+
+variable "FLAVOR_OS_MAP" {
+    default = {
+        "cli" = "bookworm,alpine"
+        "apache" = "bookworm" # apache flavor has no alpine os image
+        "fpm" = "bookworm,alpine"
+        "zts" = "bookworm,alpine"
+    }
+}
+
+variable "TARGETS" {
+    default = [
+        "base",
+        "ffmpeg"
+    ]
 }
 
 function "tag" {
     params = [registry, php-version, os, target, php-flavor]
     result = [
-        // Tag "${php-version}-${php-flavor}-${os}-${target}"
-        "${registry}/${REPOSITORY_IMAGE}:${php-version}-${php-flavor}-${os}${target == "base" ? "" : "-${target}"}",
-        // Tag "latest"
-        php-version == DEFAULT_PHP_VERSION && target == "base" ? "${registry}/${REPOSITORY_IMAGE}:latest" : "",
-        // Tag "${php-flavor}-${os}-${target}"
-        php-version == DEFAULT_PHP_VERSION ? "${registry}/${REPOSITORY_IMAGE}:${php-flavor}-${os}${target == "base" ? "" : "-${target}"}" : "",
+        "${registry}/${REPOSITORY_IMAGE}:${php-version}-${php-flavor}-${os}${target == DEFAULT_TARGET ? "" : "-${target}"}",
+        # Only default PHP version + default flavor + default OS + default target gets 'latest'
+        php-version == DEFAULT_PHP_VERSION && php-flavor == DEFAULT_FLAVOR && os == DEFAULT_OS && target == DEFAULT_TARGET ? "${registry}/${REPOSITORY_IMAGE}:latest" : "",
+        # Only default PHP version + default OS gets short tags
+        php-version == DEFAULT_PHP_VERSION && os == DEFAULT_OS ? "${registry}/${REPOSITORY_IMAGE}:${php-flavor}-${os}${target == DEFAULT_TARGET ? "" : "-${target}"}" : "",
     ]
-}
-
-function "os_for_php_version" {
-    params = [v]
-    result = lookup(PHP_OS_MAP, php_major_minor(v), "bookworm")
 }
 
 function "php_major_minor" {
@@ -67,20 +89,38 @@ function "_php_version" {
     result = "${m.major}.${m.minor}" == DEFAULT_PHP_VERSION ? [v, "${m.major}.${m.minor}", "${m.major}"] : [v, "${m.major}.${m.minor}"]
 }
 
+function "php_flavor_os_variants" {
+    params = []
+    result = flatten([
+        for php_version in split(",", PHP_VERSIONS) : [
+            for flavor in keys(FLAVOR_OS_MAP) : [
+                for php_os in split(",", lookup(PHP_OS_MAP, php_major_minor(php_version), DEFAULT_OS)) : [
+                    for flavor_os in split(",", FLAVOR_OS_MAP[flavor]) : (
+                        php_os == flavor_os ? {
+                            php_version = php_version
+                            flavor = flavor
+                            os = flavor_os
+                        } : null
+                    )
+                ]
+            ]
+        ]
+    ])
+}
+
+function "filter_nulls" {
+    params = [list]
+    result = [for item in list : item if item != null]
+}
+
 target "default" {
-    name = "php-${replace(php-version, ".", "-")}-${php-flavor}-${os_for_php_version(php-version)}-${tgt}"
+    name = "php-${replace(variant.php_version, ".", "-")}-${variant.flavor}-${variant.os}-${tgt}"
     matrix = {
-        php-version = split(",", PHP_VERSIONS)
-        php-flavor = [
-            "fpm"
-        ]
-        tgt = [
-            "base",
-            "ffmpeg"
-        ]
+        variant = filter_nulls(php_flavor_os_variants())
+        tgt = TARGETS
     }
     contexts = {
-        php-base = "docker-image://php:${php-version}-${php-flavor}-${os_for_php_version(php-version)}"
+        php-base = "docker-image://php:${variant.php_version}-${variant.flavor}-${variant.os}"
     }
     dockerfile = "Dockerfile"
     context = "./"
@@ -93,11 +133,11 @@ target "default" {
     ]
     tags = sort(distinct(flatten(
         [
-            for pv in php_version(php-version) :
+            for pv in php_version(variant.php_version) :
             [
                 for registry in split(",", REGISTRY_USERS) :
                 flatten([
-                    tag(registry, pv, os_for_php_version(php-version), tgt, php-flavor),
+                    tag(registry, pv, variant.os, tgt, variant.flavor),
                 ])
             ]
         ])))
