@@ -19,9 +19,9 @@ tasks:
     summary: |
       Example:
 
-      task act pv="8.4.1"
+      task act:push:version pv="8.4.10"
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.4.1"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.4.10"}}'
     cmds:
       - act push --input version={{.PHP_VERSIONS}}
 
