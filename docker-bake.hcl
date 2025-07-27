@@ -34,11 +34,11 @@ variable "DEFAULT_TARGET" {
 
 variable "PHP_OS_MAP" {
     default = {
-        "8.1" = "bookworm,alpine"
-        "8.2" = "bookworm,alpine"
-        "8.3" = "bookworm,alpine"
-        "8.4" = "bookworm,alpine"
-        "8.5" = "bookworm,alpine"
+        "8.1" = "bookworm"
+        "8.2" = "bookworm"
+        "8.3" = "bookworm"
+        "8.4" = "bookworm"
+        "8.5" = "bookworm"
     }
 }
 
