@@ -48,7 +48,6 @@ FROM common AS ffmpeg
 RUN <<EOT sh
   apt-get install -y \
       software-properties-common  \
-      nano \
       zip \
       unzip \
       ffmpeg \

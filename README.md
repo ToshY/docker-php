@@ -47,15 +47,14 @@ pcntl
 
 #### Additional packages
 
-| Package \ Image              | `fpm-bookworm`  | `fpm-bookworm-ffmpeg` |
-|:-----------------------------|:---------------:|:---------------------:|
-| `software-properties-common` |        ✅        |           ✅           |
-| `zip`                        |        ✅        |           ✅           |
-| `unzip`                      |        ✅        |           ✅           |
-| `nano`                       |                 |           ✅           |
-| `ffmpeg`                     |                 |           ✅           |
-| `mkvtoolnix`                 |                 |           ✅           |
-| `libimage-exiftool-perl`     |                 |           ✅           |
+| Package \ Image              | `base` | `ffmpeg` |
+|:-----------------------------|:------:|:--------:|
+| `software-properties-common` |   ✅    |    ✅     |
+| `zip`                        |   ✅    |    ✅     |
+| `unzip`                      |   ✅    |    ✅     |
+| `ffmpeg`                     |        |    ✅     |
+| `mkvtoolnix`                 |        |    ✅     |
+| `libimage-exiftool-perl`     |        |    ✅     |
 
 ## ❕ License
 
