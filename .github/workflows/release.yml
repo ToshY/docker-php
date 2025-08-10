@@ -190,6 +190,7 @@ jobs:
           targets: |
             ${{ matrix.variant }}-base
             ${{ matrix.variant }}-ffmpeg
+            ${{ matrix.variant }}-otel
           provenance: true
           set: |
             *.tags=
@@ -198,6 +199,8 @@ jobs:
             ${{ matrix.variant }}-base.cache-to=type=gha,scope=${{ matrix.variant }}-base-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
             ${{ matrix.variant }}-ffmpeg.cache-from=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
             ${{ matrix.variant }}-ffmpeg.cache-to=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
+            ${{ matrix.variant }}-otel.cache-from=type=gha,scope=${{ matrix.variant }}-otel-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
+            ${{ matrix.variant }}-otel.cache-to=type=gha,scope=${{ matrix.variant }}-otel-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
             *.output=type=image,name=${{ env.GHCR_SLUG }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
         env:
           SHA: ${{ github.sha }}
@@ -238,6 +241,14 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload OTEL digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.variant }}-otel-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digest/otel/*
+          if-no-files-found: error
+          retention-days: 1
+
   merge:
     runs-on: ubuntu-24.04
     if: github.event_name != 'pull_request'
@@ -254,7 +265,7 @@ jobs:
         target: ${{ fromJson(needs.prepare.outputs.targets) }}
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: /tmp/digest
           pattern: digest-${{ matrix.variant }}-${{ matrix.target }}-*
