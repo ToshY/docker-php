@@ -57,3 +57,18 @@ RUN <<EOT sh
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
+
+FROM common AS otel
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions opentelemetry \
+      grpc \
+      protobuf
+  apt-get install -y \
+      software-properties-common \
+      zip \
+      unzip
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
+EOT

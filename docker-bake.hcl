@@ -54,7 +54,8 @@ variable "FLAVOR_OS_MAP" {
 variable "TARGETS" {
     default = [
         "base",
-        "ffmpeg"
+        "ffmpeg",
+        "otel"
     ]
 }
 
