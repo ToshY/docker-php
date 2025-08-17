@@ -93,6 +93,7 @@ protobuf
 !!! info
 
     - [`opentelemetry`](https://opentelemetry.io/docs/what-is-opentelemetry/): High-quality, ubiquitous, and portable telemetry to enable effective observability.
+    - [`grpc`]https://github.com/grpc/grpc): A modern, open source, high-performance remote procedure call (RPC) framework that can run anywhere.
     - [`protobuf`](https://github.com/protocolbuffers/protobuf/tree/main/php): Significant performance improvement for otlp+protobuf exporting.
 
 !!! note
