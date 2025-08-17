@@ -1,0 +1,61 @@
+site_name: ToshY/docker-php
+site_description: Customised PHP 8.1+ docker images.
+site_url: https://toshy.github.io/docker-php
+repo_name: ToshY/docker-php
+repo_url: https://github.com/ToshY/docker-php
+docs_dir: docs/
+site_dir: site/
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/elephant
+  font: false
+  features:
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - toc.follow
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep-purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep-purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+markdown_extensions:
+  - abbr:
+  - tables:
+  - toc:
+  - admonition:
+  - pymdownx.details:
+  - pymdownx.extra:
+  - pymdownx.highlight:
+      use_pygments: false
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js
+  - javascripts/highlight.js
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/tokyo-night-dark.min.css
+  - stylesheets/extra.css
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ToshY/docker-php
+      name: github.com/ToshY/docker-php
+nav:
+  - About: index.md
+  - Usage: usage.md
+  - Images: images.md
