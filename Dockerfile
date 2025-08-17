@@ -10,23 +10,27 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN <<EOT sh
   set -ex
-  install-php-extensions mysqli \
-        pdo_mysql \
-        exif \
-        ftp \
-        gd \
-        imap \
-        opcache \
-        soap \
-        zip \
-        intl \
-        gettext \
-        sysvsem \
-        amqp \
-        redis \
-        pcntl
   apt-get update
   apt-get install -y libexpat1=2.5.0-1+deb12u1 libgstreamer1.0-0=1.22.0-2+deb12u1
+EOT
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions mysqli \
+    pdo_mysql \
+    exif \
+    ftp \
+    gd \
+    imap \
+    opcache \
+    soap \
+    zip \
+    intl \
+    gettext \
+    sysvsem \
+    amqp \
+    redis \
+    pcntl
 EOT
 
 WORKDIR /app
@@ -36,9 +40,9 @@ FROM common AS base
 RUN <<EOT sh
   set -ex
   apt-get install -y \
-      software-properties-common \
-      zip \
-      unzip
+    software-properties-common \
+    zip \
+    unzip
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
@@ -47,13 +51,13 @@ FROM common AS ffmpeg
 
 RUN <<EOT sh
   apt-get install -y \
-      software-properties-common  \
-      zip \
-      unzip \
-      ffmpeg \
-      mkvtoolnix \
-      libimage-exiftool-perl \
-      libjxl0.7=0.7.0-10+deb12u1
+    software-properties-common  \
+    zip \
+    unzip \
+    ffmpeg \
+    mkvtoolnix \
+    libimage-exiftool-perl \
+    libjxl0.7=0.7.0-10+deb12u1
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
@@ -62,13 +66,17 @@ FROM common AS otel
 
 RUN <<EOT sh
   set -ex
-  install-php-extensions opentelemetry \
-      grpc \
-      protobuf
   apt-get install -y \
-      software-properties-common \
-      zip \
-      unzip
+    software-properties-common \
+    zip \
+    unzip
   apt-get clean
   rm -rf /var/lib/apt/lists/*
+EOT
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions opentelemetry \
+    grpc \
+    protobuf
 EOT
