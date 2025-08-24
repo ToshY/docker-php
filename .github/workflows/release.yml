@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Skopeo
-        uses: supplypike/setup-bin@v4
+        uses: supplypike/setup-bin@v5
         with:
           uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.17.0/skopeo-linux-amd64'
           name: 'skopeo'
