@@ -50,9 +50,9 @@ jobs:
       - name: Skopeo
         uses: supplypike/setup-bin@v5
         with:
-          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.17.0/skopeo-linux-amd64'
+          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.20.0/skopeo-linux-amd64'
           name: 'skopeo'
-          version: 'v1.17.0'
+          version: 'v1.20.0'
 
       - name: Get PHP versions
         id: check_version
@@ -83,15 +83,14 @@ jobs:
           GHCR_SLUG: ${{ env.GHCR_SLUG }}
         run: |
           # Retrieve current registry tags
-          ENCODED_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${ENCODED_TOKEN}" https://ghcr.io/v2/${GHCR_SLUG#ghcr.io/}/tags/list)
+          RESPONSE=$(skopeo list-tags "docker://${GHCR_SLUG}" --creds "${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}")
 
           # In case of a new GitHub repository, or has registry but without any tags without any tags yet
-          if echo "$RESPONSE" | jq -e '.errors' >/dev/null 2>&1 || echo "$RESPONSE" | jq -e '.tags == null' >/dev/null 2>&1; then
+          if echo "$RESPONSE" | jq -e '.errors' >/dev/null 2>&1 || echo "$RESPONSE" | jq -e '.Tags == null' >/dev/null 2>&1; then
             if echo "$RESPONSE" | jq -e '.errors' >/dev/null 2>&1; then
               MESSAGE=$(echo "$RESPONSE" | jq -e '.errors[0].message')
             else
-              MESSAGE=$(echo "$RESPONSE" | jq -e '.tags // "empty"')
+              MESSAGE=$(echo "$RESPONSE" | jq -e '.Tags // "empty"')
             fi
           
             echo "No tags found (Response: $MESSAGE). Proceed to build step."
@@ -104,7 +103,7 @@ jobs:
           fi
 
           # Current released php versions from GitHub packages
-          PACKAGE_PHP_VERSIONS=$(echo "$RESPONSE" | jq -r '.tags[]' | grep -oP '^\d+(\.\d+){0,2}(?=-)' | sort -uV | jq -R . | jq -s .)
+          PACKAGE_PHP_VERSIONS=$(echo "$RESPONSE" | jq -r '.Tags[]' | grep -oP '^\d+(\.\d+){0,2}(?=-)' | sort -uV | jq -R . | jq -s .)
 
           # Check which PHP tags already exists; remove already existing ones from list if "force" input was not provided
           CURRENT_PHP_VERSIONS=${{ steps.check_version.outputs.php_versions }}
