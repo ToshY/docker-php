@@ -34,3 +34,4 @@ jobs:
         env:
           TRIVY_TIMEOUT: 5m
           TRIVY_IGNORE_UNFIXED: true
+          TRIVY_DISABLE_VEX_NOTICE: true

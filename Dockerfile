@@ -10,12 +10,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN <<EOT sh
   set -ex
-  apt-get update
-  apt-get install -y libexpat1=2.5.0-1+deb12u1 libgstreamer1.0-0=1.22.0-2+deb12u1
-EOT
-
-RUN <<EOT sh
-  set -ex
   install-php-extensions mysqli \
     pdo_mysql \
     exif \
