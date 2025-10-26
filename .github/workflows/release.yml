@@ -225,7 +225,7 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Upload base digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: digest-${{ matrix.variant }}-base-${{ env.PLATFORM_PAIR }}
           path: /tmp/digest/base/*
@@ -233,7 +233,7 @@ jobs:
           retention-days: 1
 
       - name: Upload ffmpeg digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: digest-${{ matrix.variant }}-ffmpeg-${{ env.PLATFORM_PAIR }}
           path: /tmp/digest/ffmpeg/*
@@ -241,7 +241,7 @@ jobs:
           retention-days: 1
 
       - name: Upload OTEL digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: digest-${{ matrix.variant }}-otel-${{ env.PLATFORM_PAIR }}
           path: /tmp/digest/otel/*
