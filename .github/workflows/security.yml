@@ -15,15 +15,18 @@ jobs:
           - ghcr.io/toshy/php:8.1-fpm-bookworm
           - ghcr.io/toshy/php:8.2-fpm-bookworm
           - ghcr.io/toshy/php:8.3-fpm-bookworm
-          - ghcr.io/toshy/php:fpm-bookworm
+          - ghcr.io/toshy/php:8.4-fpm-bookworm
+          - ghcr.io/toshy/php:fpm-trixie
           - ghcr.io/toshy/php:8.1-fpm-bookworm-ffmpeg
           - ghcr.io/toshy/php:8.2-fpm-bookworm-ffmpeg
           - ghcr.io/toshy/php:8.3-fpm-bookworm-ffmpeg
-          - ghcr.io/toshy/php:fpm-bookworm-ffmpeg
+          - ghcr.io/toshy/php:8.4-fpm-bookworm-ffmpeg
+          - ghcr.io/toshy/php:fpm-trixie-ffmpeg
           - ghcr.io/toshy/php:8.1-fpm-bookworm-otel
           - ghcr.io/toshy/php:8.2-fpm-bookworm-otel
           - ghcr.io/toshy/php:8.3-fpm-bookworm-otel
-          - ghcr.io/toshy/php:fpm-bookworm-otel
+          - ghcr.io/toshy/php:8.4-fpm-bookworm-otel
+          - ghcr.io/toshy/php:fpm-trixie-otel
     steps:
       - name: Scan for vulnerabilities
         uses: crazy-max/ghaction-container-scan@v3

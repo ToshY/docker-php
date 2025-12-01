@@ -49,7 +49,7 @@ unzip
 
 !!!tip "Container"
     ```shell
-    ghcr.io/toshy/php:8.4-fpm-bookworm
+    ghcr.io/toshy/php:8.5-fpm-trixie
     ```
 
 ### FFmpeg
@@ -64,7 +64,7 @@ libimage-exiftool-perl
 
 !!!tip "Container suffixed with `-ffmpeg`"
     ```shell
-    ghcr.io/toshy/php:8.4-fpm-bookworm-ffmpeg
+    ghcr.io/toshy/php:8.5-fpm-trixie-ffmpeg
     ```
 
 !!! info
@@ -87,7 +87,7 @@ protobuf
 
 !!!tip "Container suffixed with `-otel`"
     ```shell
-    ghcr.io/toshy/php:8.4-fpm-bookworm-otel
+    ghcr.io/toshy/php:8.5-fpm-trixie-otel
     ```
 
 !!! info
