@@ -17,7 +17,6 @@ pdo_mysql
 exif
 gd
 imagick
-imap
 opcache
 soap
 zip

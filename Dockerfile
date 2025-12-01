@@ -15,7 +15,6 @@ RUN <<EOT sh
     exif \
     ftp \
     gd \
-    imap \
     opcache \
     soap \
     zip \
