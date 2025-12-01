@@ -13,11 +13,11 @@ variable "VERSION" {
 }
 
 variable "PHP_VERSIONS" {
-    default = "8.1,8.2,8.3,8.4"
+    default = "8.1,8.2,8.3,8.4,8.5"
 }
 
 variable "DEFAULT_PHP_VERSION" {
-    default = "8.4"
+    default = "8.5"
 }
 
 variable "DEFAULT_FLAVOR" {
@@ -38,16 +38,16 @@ variable "PHP_OS_MAP" {
         "8.2" = "bookworm"
         "8.3" = "bookworm"
         "8.4" = "bookworm"
-        "8.5" = "bookworm"
+        "8.5" = "trixie"
     }
 }
 
 variable "FLAVOR_OS_MAP" {
     default = {
-        "cli" = "bookworm,alpine"
-        "apache" = "bookworm" # apache flavor has no alpine os image
-        "fpm" = "bookworm,alpine"
-        "zts" = "bookworm,alpine"
+        "cli" = "bookworm,trixie,alpine"
+        "apache" = "bookworm,trixie" # apache flavor has no alpine os image
+        "fpm" = "bookworm,trixie,alpine"
+        "zts" = "bookworm,trixie,alpine"
     }
 }
 
