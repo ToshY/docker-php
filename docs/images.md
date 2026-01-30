@@ -41,7 +41,6 @@ pcntl
 Contains additional **libraries** that are useful for a majority of projects.
 
 ```text
-software-properties-common
 zip
 unzip
 ```
