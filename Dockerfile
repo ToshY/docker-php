@@ -34,7 +34,6 @@ RUN <<EOT sh
   set -ex
   apt-get update
   apt-get install -y \
-    software-properties-common \
     zip \
     unzip
   apt-get clean
@@ -47,13 +46,11 @@ RUN <<EOT sh
   set -ex
   apt-get update
   apt-get install -y \
-    software-properties-common  \
     zip \
     unzip \
     ffmpeg \
     mkvtoolnix \
-    libimage-exiftool-perl \
-    libjxl0.7=0.7.0-10+deb12u1
+    libimage-exiftool-perl
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
@@ -64,7 +61,6 @@ RUN <<EOT sh
   set -ex
   apt-get update
   apt-get install -y \
-    software-properties-common \
     zip \
     unzip
   apt-get clean
