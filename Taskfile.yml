@@ -1,7 +1,7 @@
 version: '3'
 
 env:
-  JQ: docker run --rm -i ghcr.io/jqlang/jq:1.8
+  JQ: docker run --rm -i ghcr.io/jqlang/jq:1.8.1
 
 tasks:
   default:
@@ -12,14 +12,14 @@ tasks:
   mkdocs:
     desc: MkDocs build
     cmds:
-      - docker run --rm -it -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.6 build
+      - docker run --rm -it -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.7 build
 
   mkdocs:live:
     desc: MkDocs development server
     vars:
       PORT: '{{.p | default "8002"}}'
     cmds:
-      - docker run --rm -it -p {{.PORT}}:8000 -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.6
+      - docker run --rm -it -p {{.PORT}}:8000 -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.7
 
   # nektos/act
   act:push:
