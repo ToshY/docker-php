@@ -1,6 +1,6 @@
 # :material-elephant: Docker-PHP
 
-A collection of customised [PHP](https://github.com/docker-library/php) 8.1+ docker images.
+A collection of customised [PHP](https://github.com/docker-library/php) 8.2+ docker images.
 
 ### :material-github: GitHub
 

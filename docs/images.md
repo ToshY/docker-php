@@ -72,7 +72,7 @@ libimage-exiftool-perl
     - [`libimage-exiftool-perl`](https://packages.debian.org/source/sid/libimage-exiftool-perl): A library and program to read and write meta information in multimedia files.
 
 !!! note
-    The `ffmpeg` image includes the same additional libraries as the `base` image.
+    The `ffmpeg` image inherits the libraries from the `base` image.
 
 ### OTEL
 
@@ -95,4 +95,4 @@ protobuf
     - [`protobuf`](https://github.com/protocolbuffers/protobuf/tree/main/php): Significant performance improvement for otlp+protobuf exporting.
 
 !!! note
-    The `otel` image includes the same additional libraries as the `base` image.
+    The `otel` image inherits the libraries from the `base` image.

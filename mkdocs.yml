@@ -1,5 +1,5 @@
 site_name: ToshY/docker-php
-site_description: Customised PHP 8.1+ docker images.
+site_description: Customised PHP 8.2+ docker images.
 site_url: https://toshy.github.io/docker-php
 repo_name: ToshY/docker-php
 repo_url: https://github.com/ToshY/docker-php

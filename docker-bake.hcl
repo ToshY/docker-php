@@ -13,7 +13,7 @@ variable "VERSION" {
 }
 
 variable "PHP_VERSIONS" {
-    default = "8.1,8.2,8.3,8.4,8.5"
+    default = "8.2,8.3,8.4,8.5"
 }
 
 variable "DEFAULT_PHP_VERSION" {
@@ -34,7 +34,6 @@ variable "DEFAULT_TARGET" {
 
 variable "PHP_OS_MAP" {
     default = {
-        "8.1" = "bookworm"
         "8.2" = "bookworm"
         "8.3" = "bookworm"
         "8.4" = "bookworm"
