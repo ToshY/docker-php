@@ -31,7 +31,7 @@ on:
           - 'false'
 
 env:
-  PHP_VERSIONS: '8.1,8.2,8.3,8.4'
+  PHP_VERSIONS: '8.1,8.2,8.3,8.4,8.5'
   GHCR_SLUG: ghcr.io/toshy/php
 
 jobs:
@@ -51,9 +51,9 @@ jobs:
       - name: Skopeo
         uses: supplypike/setup-bin@v5
         with:
-          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.20.0/skopeo-linux-amd64'
+          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.21.0/skopeo-linux-amd64'
           name: 'skopeo'
-          version: 'v1.20.0'
+          version: 'v1.21.0'
 
       - name: Get PHP versions
         id: check_version

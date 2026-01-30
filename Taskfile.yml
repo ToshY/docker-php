@@ -1,7 +1,7 @@
 version: '3'
 
 env:
-  JQ: docker run --rm -i ghcr.io/jqlang/jq:1.7
+  JQ: docker run --rm -i ghcr.io/jqlang/jq:1.8
 
 tasks:
   default:
@@ -32,9 +32,9 @@ tasks:
     summary: |
       Example:
 
-      task act:push:version pv="8.5.0"
+      task act:push:version pv="8.5.2"
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.5.0"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.5.2"}}'
     cmds:
       - act push --input version={{.PHP_VERSIONS}}
 
@@ -57,14 +57,14 @@ tasks:
   bake:
     desc: Bake
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.1.33,8.2.29,8.3.28,8.4.15,8.5.0"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.1.34,8.2.30,8.3.30,8.4.17,8.5.2"}}'
     cmds:
       - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake --set *.platform=linux/amd64
 
   bake:print:
     desc: Bake print options without building
     vars:
-      PHP_VERSIONS: '{{ .pv | default "8.1.33,8.2.29,8.3.28,8.4.15,8.5.0"}}'
+      PHP_VERSIONS: '{{ .pv | default "8.1.34,8.2.30,8.3.30,8.4.17,8.5.2"}}'
     cmds:
       - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake --print | $JQ
 
@@ -73,7 +73,7 @@ tasks:
     desc: Trivy
     vars:
       TRIVY_VERSION: '{{ .tv | default "latest" }}'
-      PHP_BASE: '{{ .pv | default "8.5.0-fpm-trixie"}}'
+      PHP_BASE: '{{ .pv | default "8.5.2-fpm-trixie"}}'
       TARGET: '{{ .t | default "ffmpeg" }}'
     cmds:
       - |
