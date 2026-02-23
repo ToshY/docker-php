@@ -26,7 +26,7 @@ jobs:
           - ghcr.io/toshy/php:8.5-fpm-trixie-otel
     steps:
       - name: Scan for vulnerabilities
-        uses: crazy-max/ghaction-container-scan@v3
+        uses: crazy-max/ghaction-container-scan@v4
         with:
           image: ${{ matrix.image }}
           severity_threshold: CRITICAL
