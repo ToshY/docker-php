@@ -25,7 +25,7 @@ variable "DEFAULT_FLAVOR" {
 }
 
 variable "DEFAULT_OS" {
-    default = "bookworm"
+    default = "trixie"
 }
 
 variable "DEFAULT_TARGET" {
@@ -34,19 +34,19 @@ variable "DEFAULT_TARGET" {
 
 variable "PHP_OS_MAP" {
     default = {
-        "8.2" = "bookworm"
-        "8.3" = "bookworm"
-        "8.4" = "bookworm"
+        "8.2" = "trixie"
+        "8.3" = "trixie"
+        "8.4" = "trixie"
         "8.5" = "trixie"
     }
 }
 
 variable "FLAVOR_OS_MAP" {
     default = {
-        "cli" = "bookworm,trixie,alpine"
-        "apache" = "bookworm,trixie" # apache flavor has no alpine os image
-        "fpm" = "bookworm,trixie,alpine"
-        "zts" = "bookworm,trixie,alpine"
+        "cli" = "trixie,alpine"
+        "apache" = "trixie" # apache flavor has no alpine os image
+        "fpm" = "trixie,alpine"
+        "zts" = "trixie,alpine"
     }
 }
 
