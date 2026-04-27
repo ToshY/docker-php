@@ -36,8 +36,8 @@ ghcr.io/toshy/php:<version>-<flavor>-<os>(-<target>)
 ```
 
 - Contains the following PHP versions: `8.2`, `8.3`, `8.4`, `8.5`.
-- Contains the following flavors: `cli`, `fpm`, `apache`, `zts`
-- Contains the following OS: `bookworm`, `trixie`.
+- Contains the following flavors: `cli`, `fpm`, `apache`, `zts`.
+- Contains the following OS: `trixie` (deprecated: `bookworm`).
 - Contains the following [targets](images.md#targets): `base`, `ffmpeg`, `otel`.
 
 !!!question
