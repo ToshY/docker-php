@@ -54,7 +54,8 @@ variable "TARGETS" {
     default = [
         "base",
         "ffmpeg",
-        "otel"
+        "otel",
+        "otel-ffmpeg"
     ]
 }
 

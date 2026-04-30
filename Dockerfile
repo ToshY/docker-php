@@ -70,5 +70,28 @@ EOT
 RUN <<EOT sh
   set -ex
   install-php-extensions opentelemetry \
+    grpc \
+    protobuf
+EOT
+
+FROM common AS otel-ffmpeg
+
+RUN <<EOT sh
+  set -ex
+  apt-get update
+  apt-get install -y \
+    zip \
+    unzip \
+    ffmpeg \
+    mkvtoolnix \
+    libimage-exiftool-perl
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
+EOT
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions opentelemetry \
+    grpc \
     protobuf
 EOT

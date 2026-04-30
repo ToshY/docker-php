@@ -52,7 +52,7 @@ jobs:
         with:
           uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.21.0/skopeo-linux-amd64'
           name: 'skopeo'
-          version: 'v1.21.0'
+          version: 'v1.22.2'
 
       - name: Get PHP versions
         id: check_version
@@ -137,10 +137,14 @@ jobs:
         shell: bash
         run: |
           METADATA="$(docker buildx bake --print | jq -c)"
-          FLAVORS="$(jq -c '.group.default.targets|map(split("-")[-3])|unique' <<< "${METADATA}")"
-          TARGETS="$(jq -c '.group.default.targets|map(split("-")[-1])|unique' <<< "${METADATA}")"
-          _FORMATTED_TARGETS="$(jq -cr 'map("-" + split("-")[0])|join("|")' <<< "${TARGETS}")"
-          VARIANTS="$(jq -c ".group.default.targets|map(sub(\"$_FORMATTED_TARGETS\"; \"\"))|unique" <<< "${METADATA}")"
+          # Single source of truth: derive targets from bake metadata's per-target
+          # stage name (`.target.<name>.target`), not from parsing target keys.
+          TARGETS="$(jq -c '[.target[].target] | unique' <<< "${METADATA}")"
+          # Build a regex of "-<target>" alternatives (longest-first) used to strip
+          # the target suffix from bake target names so we can derive variants/flavors.
+          SUFFIX_REGEX="$(jq -r 'sort_by(-(.|length))|map("-"+.)|join("|")' <<< "${TARGETS}")"
+          VARIANTS="$(jq -c --arg re "$SUFFIX_REGEX" '.group.default.targets|map(sub($re; ""))|unique' <<< "${METADATA}")"
+          FLAVORS="$(jq -c 'map(split("-")[-2])|unique' <<< "${VARIANTS}")"
           PLATFORMS="$(jq -c 'first(.target[]) | .platforms' <<< "${METADATA}")"
           {
             echo metadata="$METADATA"
@@ -182,25 +186,41 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Derive bake args
+        id: bake_args
+        shell: bash
+        env:
+          TARGETS_JSON: ${{ needs.prepare.outputs.targets }}
+          VARIANT: ${{ matrix.variant }}
+          PLATFORM: ${{ matrix.platform }}
+          REF: ${{ needs.prepare.outputs.ref || github.ref }}
+          GHCR_SLUG: ${{ env.GHCR_SLUG }}
+          PUSH: ${{ github.event_name != 'pull_request' }}
+        run: |
+          {
+            echo 'targets<<EOF'
+            jq -r --arg v "$VARIANT" '.[] | "\($v)-\(.)"' <<< "$TARGETS_JSON"
+            echo 'EOF'
+
+            echo 'set<<EOF'
+            printf '*.tags=\n*.platform=%s\n' "$PLATFORM"
+            jq -r --arg v "$VARIANT" --arg ref "$REF" --arg plat "$PLATFORM" '
+              .[] |
+              "\($v)-\(.).cache-from=type=gha,scope=\($v)-\(.)-\($ref)-\($plat)\n" +
+              "\($v)-\(.).cache-to=type=gha,scope=\($v)-\(.)-\($ref)-\($plat)"
+            ' <<< "$TARGETS_JSON"
+            printf '*.output=type=image,name=%s,push-by-digest=true,name-canonical=true,push=%s\n' \
+              "$GHCR_SLUG" "$PUSH"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build images and push
         id: bake
         uses: docker/bake-action@v7
         with:
-          targets: |
-            ${{ matrix.variant }}-base
-            ${{ matrix.variant }}-ffmpeg
-            ${{ matrix.variant }}-otel
+          targets: ${{ steps.bake_args.outputs.targets }}
           provenance: true
-          set: |
-            *.tags=
-            *.platform=${{ matrix.platform }}
-            ${{ matrix.variant }}-base.cache-from=type=gha,scope=${{ matrix.variant }}-base-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            ${{ matrix.variant }}-base.cache-to=type=gha,scope=${{ matrix.variant }}-base-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            ${{ matrix.variant }}-ffmpeg.cache-from=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            ${{ matrix.variant }}-ffmpeg.cache-to=type=gha,scope=${{ matrix.variant }}-ffmpeg-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            ${{ matrix.variant }}-otel.cache-from=type=gha,scope=${{ matrix.variant }}-otel-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            ${{ matrix.variant }}-otel.cache-to=type=gha,scope=${{ matrix.variant }}-otel-${{ needs.prepare.outputs.ref || github.ref }}-${{ matrix.platform }}
-            *.output=type=image,name=${{ env.GHCR_SLUG }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+          set: ${{ steps.bake_args.outputs.set }}
         env:
           SHA: ${{ github.sha }}
           VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || steps.check.outputs.ref || github.event.repository.default_branch }}
@@ -224,27 +244,13 @@ jobs:
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
-      - name: Upload base digest
+      - name: Upload digests
+        # Single bundled upload: preserves the `<target>/<sha>` directory layout
+        # produced by `Export digests`. Adding a target requires no edits here.
         uses: actions/upload-artifact@v7
         with:
-          name: digest-${{ matrix.variant }}-base-${{ env.PLATFORM_PAIR }}
-          path: /tmp/digest/base/*
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload ffmpeg digest
-        uses: actions/upload-artifact@v7
-        with:
-          name: digest-${{ matrix.variant }}-ffmpeg-${{ env.PLATFORM_PAIR }}
-          path: /tmp/digest/ffmpeg/*
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload OTEL digest
-        uses: actions/upload-artifact@v7
-        with:
-          name: digest-${{ matrix.variant }}-otel-${{ env.PLATFORM_PAIR }}
-          path: /tmp/digest/otel/*
+          name: digest--${{ matrix.variant }}--${{ env.PLATFORM_PAIR }}
+          path: /tmp/digest/
           if-no-files-found: error
           retention-days: 1
 
@@ -267,7 +273,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: /tmp/digest
-          pattern: digest-${{ matrix.variant }}-${{ matrix.target }}-*
+          pattern: digest--${{ matrix.variant }}--*
           merge-multiple: true
 
       - name: Display structure of downloaded files
@@ -284,7 +290,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create manifest list and push
-        working-directory: /tmp/digest
+        working-directory: /tmp/digest/${{ matrix.target }}
         run: |
           # shellcheck disable=SC2046,SC2086
           docker buildx imagetools create $(jq -cr '.target."${{ matrix.variant }}-${{ matrix.target }}".tags|map(select(startswith("${{ env.GHCR_SLUG }}"))| "-t " + .)|join(" ")' <<< ${METADATA}) \
