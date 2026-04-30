@@ -96,3 +96,33 @@ protobuf
 
 !!! note
     The `otel` image inherits the libraries from the `base` image.
+
+### OTEL + FFmpeg
+
+Combines the `otel` PHP extensions with the `ffmpeg` media-processing libraries in a single image, useful when an observability-instrumented PHP service also needs audio/video/image tooling.
+
+**PHP extensions** (in addition to `common`):
+
+```text
+opentelemetry
+protobuf
+```
+
+**Libraries** (in addition to `common`):
+
+```text
+zip
+unzip
+ffmpeg
+mkvtoolnix
+libimage-exiftool-perl
+```
+
+!!!tip "Container suffixed with `-otel-ffmpeg`"
+    ```shell
+    ghcr.io/toshy/php:8.5-fpm-trixie-otel-ffmpeg
+    ```
+
+!!! note
+    The `otel-ffmpeg` image inherits the libraries from the `base` image and combines the additions of the `ffmpeg` and `otel` targets.
+

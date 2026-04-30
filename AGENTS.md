@@ -8,9 +8,10 @@
 
 ## Architecture map (read in this order)
 - `docker-bake.hcl` is the release matrix brain: PHP versions, flavor/OS compatibility, targets, tags, and OCI labels are generated here.
-- `Dockerfile` defines 4 stages: `common` -> `base`, `ffmpeg`, `otel`.
+- `Dockerfile` defines 5 stages: `common` -> `base`, `ffmpeg`, `otel`, `otel-ffmpeg`.
 - `common` installs shared binaries/extensions; each target stage adds only its delta.
 - Build context `php-base` is injected from upstream `php:<version>-<flavor>-<os>` via bake contexts (not a local FROM alias).
+- Target names may contain `-` (for example `otel-ffmpeg`); workflow parsing in `release.yml` derives `TARGETS` directly from bake metadata (`.target[].target | unique`) and strips suffixes longest-first — `docker-bake.hcl` remains the single source of truth for the target list.
 
 ## Image and tag model you must preserve
 - Tag pattern is `<version>-<flavor>-<os>(-<target>)`; `base` is default and has no `-base` suffix.
@@ -44,3 +45,10 @@
 - If changing defaults (`DEFAULT_*`, `PHP_VERSIONS`, targets), update `docker-bake.hcl`, `.github/workflows/release.yml`, and docs together.
 - If changing target contents, verify tag examples in docs still match real output from `task bake:print`.
 - Prefer validating matrix/tag behavior locally before modifying workflow logic.
+
+## Release pipeline gotchas (must preserve)
+- `docker-bake.hcl` is the single source of truth for targets. The `prepare` job in `release.yml` derives `TARGETS` from bake metadata via `[.target[].target] | unique` — do NOT reintroduce a hardcoded `TARGETS` env list.
+- Bake target naming convention is `php-<ver-with-dashes>-<flavor>-<os>-<target>` and `<target>` may itself contain `-` (for example `otel-ffmpeg`). Always strip the target suffix using the metadata-derived list with a longest-first regex; never use positional `split("-")` indexes on the full target name.
+- Per-platform digest artifacts use a `--` (double-hyphen) delimiter: `digest--<variant>--<target>--<platform>`. The merge job's `actions/download-artifact` `pattern` relies on this so that `target=otel` does not glob-match `otel-ffmpeg` artifacts (single `-` would produce a corrupt manifest list). Keep upload names and the download pattern in sync; do not introduce a target name containing `--`.
+- When adding a new target: update `Dockerfile` stage and `docker-bake.hcl` `TARGETS` (workflow picks it up automatically), then update `release.yml` (bake `targets:` list, cache-from/to scopes, upload-artifact step), `security.yml` scan matrix, and docs (`docs/usage.md`, `docs/images.md`).
+
