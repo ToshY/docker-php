@@ -80,6 +80,7 @@ Contains additional [OpenTelemetry](https://opentelemetry.io/) **PHP extensions*
 
 ```text
 opentelemetry
+grpc
 protobuf
 ```
 
@@ -105,6 +106,7 @@ Combines the `otel` PHP extensions with the `ffmpeg` media-processing libraries 
 
 ```text
 opentelemetry
+grpc
 protobuf
 ```
 

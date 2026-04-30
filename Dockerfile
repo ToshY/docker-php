@@ -70,6 +70,7 @@ EOT
 RUN <<EOT sh
   set -ex
   install-php-extensions opentelemetry \
+    grpc \
     protobuf
 EOT
 
@@ -91,5 +92,6 @@ EOT
 RUN <<EOT sh
   set -ex
   install-php-extensions opentelemetry \
+    grpc \
     protobuf
 EOT
