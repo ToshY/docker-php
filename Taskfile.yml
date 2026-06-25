@@ -70,7 +70,7 @@ tasks:
 
   # trivy
   trivy:
-    desc: Trivy
+    desc: Trivy from local build
     vars:
       TRIVY_VERSION: '{{ .tv | default "latest" }}'
       PHP_BASE: '{{ .pv | default "8.5.2-fpm-trixie"}}'
@@ -82,8 +82,23 @@ tasks:
         --target {{.TARGET}} \
         -t toshy/trivy:{{.PHP_BASE}} .
       - |
-        docker run \
+        docker run --rm --pull=always \
         -v /var/run/docker.sock:/var/run/docker.sock \
         aquasec/trivy:{{.TRIVY_VERSION}} image \
         --ignore-unfixed --severity CRITICAL,HIGH --exit-code 1 \
         toshy/trivy:{{.PHP_BASE}}
+
+  trivy:remote:
+    desc: Trivy scan remote image
+    vars:
+      TRIVY_VERSION: '{{ .tv | default "latest" }}'
+      IMAGE: '{{ .t | default "ghcr.io/toshy/php:8.3-fpm-trixie-ffmpeg" }}'
+    cmds:
+      - |
+        docker pull {{.IMAGE}}
+      - |
+        docker run --rm --pull=always \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        aquasec/trivy:{{.TRIVY_VERSION}} image \
+        --ignore-unfixed --severity CRITICAL --exit-code 1 \
+        {{.IMAGE}}
