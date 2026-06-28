@@ -25,11 +25,11 @@
 - `build` runs per-platform builds and pushes by digest.
 - `merge` assembles multi-arch manifest lists and assigns final tags from bake metadata.
 - `security.yml` performs scheduled Trivy scans of published GHCR tags (`CRITICAL`, ignore unfixed).
-- `documentation.yml` builds docs in a container and deploys `/site` to GitHub Pages on `main` pushes.
+- `docs.yml` builds docs in a container and deploys `/site` to GitHub Pages on `main` pushes.
 
 ## Critical local workflows
 - List tasks: `task --list`.
-- Build docs: `task mkdocs`; live docs: `task mkdocs:live p=8002`.
+- Build docs: `task docs`; live docs: `task docs:live p=8001`.
 - Inspect generated bake matrix/tags before CI edits: `task bake:print pv="8.2.30,8.3.30,8.4.17,8.5.2"`.
 - Local amd64 bake run: `task bake pv="8.2.30,8.3.30,8.4.17,8.5.2"`.
 - Local target vulnerability scan: `task trivy pv="8.5.2-fpm-trixie" t="ffmpeg"`.
@@ -38,7 +38,7 @@
 ## Project-specific conventions
 - Keep docs and build config synchronized: if extensions/packages/stages change in `Dockerfile`, update `docs/images.md` and `docs/usage.md` examples.
 - Default OS is `trixie`; `docs/usage.md` still references `bookworm` as deprecated context.
-- Docs tooling is containerized (`ghcr.io/squidfunk/mkdocs-material:9.7`); avoid host-only assumptions.
+- Docs tooling is containerized (`docker.io/zensical/zensical:0.0`); avoid host-only assumptions.
 - Dependency/security automation is GitHub-native (`.github/dependabot.yml` and scheduled workflows).
 
 ## Change checklist for agents

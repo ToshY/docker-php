@@ -386,3 +386,8 @@
 :root {
     --md-text-font: "Rubik";
 }
+
+.md-header {
+    background-color: #4f5b93;
+    color: #ffffff;
+}

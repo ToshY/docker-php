@@ -1,0 +1,81 @@
+[project]
+site_name = "ToshY/docker-php"
+site_description = "Customised PHP 8.2+ docker images."
+site_url = "https://toshy.github.io/docker-php"
+repo_name = "ToshY/docker-php"
+repo_url = "https://github.com/ToshY/docker-php"
+docs_dir = "docs"
+site_dir = "site"
+
+extra_javascript = [
+    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js",
+    "javascripts/highlight.js",
+]
+
+extra_css = [
+    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/tokyo-night-dark.min.css",
+    "stylesheets/extra.css",
+]
+
+nav = [
+    { "About" = "index.md" },
+    { "Usage" = "usage.md" },
+    { "Images" = "images.md" },
+]
+
+# ----------------------------------------------------------------------------
+# Theme
+# ----------------------------------------------------------------------------
+[project.theme]
+font = false
+icon.repo = "fontawesome/brands/github"
+icon.logo = "material/elephant"
+features = [
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.sections",
+    "toc.follow",
+    "navigation.top",
+    "content.code.copy",
+    "content.code.annotate",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "deep-purple"
+toggle.icon = "material/weather-sunny"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "deep-purple"
+toggle.icon = "material/weather-night"
+toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# Extra
+# ----------------------------------------------------------------------------
+[project.extra]
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/ToshY/docker-php"
+name = "github.com/ToshY/docker-php"
+
+# ----------------------------------------------------------------------------
+# Markdown extensions
+# ----------------------------------------------------------------------------
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.extra]
+[project.markdown_extensions.pymdownx.highlight]
+use_pygments = false
+[project.markdown_extensions.pymdownx.emoji]
+emoji_generator = "zensical.extensions.emoji.to_svg"
+emoji_index = "zensical.extensions.emoji.twemoji"

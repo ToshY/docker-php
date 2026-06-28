@@ -8,19 +8,6 @@ tasks:
     cmds:
       - task --list
 
-  # mkdocs
-  mkdocs:
-    desc: MkDocs build
-    cmds:
-      - docker run --rm -it -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.7 build
-
-  mkdocs:live:
-    desc: MkDocs development server
-    vars:
-      PORT: '{{.p | default "8002"}}'
-    cmds:
-      - docker run --rm -it -p {{.PORT}}:8000 -v ${PWD}:/docs ghcr.io/squidfunk/mkdocs-material:9.7
-
   # nektos/act
   act:push:
     desc: Test release
@@ -67,6 +54,20 @@ tasks:
       PHP_VERSIONS: '{{ .pv | default "8.2.30,8.3.30,8.4.17,8.5.2"}}'
     cmds:
       - PHP_VERSIONS={{.PHP_VERSIONS}} docker buildx bake --print | $JQ
+
+  # zensical
+  docs:
+    desc: Zensical build
+    cmds:
+      - docker run --rm -it -v $(pwd):/docs -w /docs docker.io/zensical/zensical:0.0 build --clean
+
+  docs:live:
+    desc: Zensical development server
+    vars:
+      PORT: '{{.p | default "8001"}}'
+    cmds:
+      - docker run --rm -it -p {{.PORT}}:8000 -v $(pwd):/docs -w /docs docker.io/zensical/zensical:0.0 serve --dev-addr 0.0.0.0:8000
+
 
   # trivy
   trivy:
