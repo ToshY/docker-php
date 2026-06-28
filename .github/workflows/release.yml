@@ -53,12 +53,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Skopeo
-        uses: supplypike/setup-bin@8365380a806a88e7a0f0d07059b175ca2f5418d7 # v5.0.1
-        with:
-          uri: 'https://github.com/lework/skopeo-binary/releases/download/v1.21.0/skopeo-linux-amd64'
-          name: 'skopeo'
-          version: 'v1.22.2'
+      - name: Install skopeo
+        run: sudo apt-get install -y skopeo
 
       - name: Get PHP versions
         id: check_version
