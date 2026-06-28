@@ -4,6 +4,9 @@
     <div>Customised <a href="https://ghcr.io/toshy/php">PHP 8.2+</a> docker images.</div>
     <br />
     <img src="https://img.shields.io/github/actions/workflow/status/toshy/docker-php/security.yml?branch=main&label=Security" alt="Security" />
+    <img src="https://img.shields.io/github/actions/workflow/status/toshy/docker-php/zizmor.yml?branch=main&label=Zizmor" alt="Zizmor" />
+    <img src="https://img.shields.io/github/actions/workflow/status/toshy/docker-php/actionlint.yml?branch=main&label=Actionlint" alt="Actionlint" />
+    <img src="https://img.shields.io/github/actions/workflow/status/toshy/docker-php/hadolint.yml?branch=main&label=Hadolint" alt="Hadolint" />
 </div>
 
 ## 📦 Images

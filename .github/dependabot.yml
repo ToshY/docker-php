@@ -1,8 +1,10 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: "main"
-    schedule:
-      interval: "weekly"
-      day: "sunday"
+  - package-ecosystem: github-actions
+    directory: /
+    groups: {github-actions: {patterns: ['*']}}
+    schedule: {interval: weekly}
+    cooldown:
+      default-days: 3
+    assignees:
+      - ToshY

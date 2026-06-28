@@ -1,3 +1,4 @@
+# hadolint ignore=DL3006
 FROM php-base AS common
 
 LABEL maintainer="ToshY (github.com/ToshY)"
@@ -30,10 +31,11 @@ WORKDIR /app
 
 FROM common AS base
 
+# hadolint ignore=DL3008
 RUN <<EOT sh
   set -ex
   apt-get update
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     zip \
     unzip
   apt-get clean
@@ -42,10 +44,11 @@ EOT
 
 FROM common AS ffmpeg
 
+# hadolint ignore=DL3008
 RUN <<EOT sh
   set -ex
   apt-get update
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     zip \
     unzip \
     ffmpeg \
@@ -57,10 +60,11 @@ EOT
 
 FROM common AS otel
 
+# hadolint ignore=DL3008
 RUN <<EOT sh
   set -ex
   apt-get update
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     zip \
     unzip
   apt-get clean
@@ -76,10 +80,11 @@ EOT
 
 FROM common AS otel-ffmpeg
 
+# hadolint ignore=DL3008
 RUN <<EOT sh
   set -ex
   apt-get update
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     zip \
     unzip \
     ffmpeg \
