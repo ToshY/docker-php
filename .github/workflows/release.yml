@@ -313,7 +313,7 @@ jobs:
         run: |
           # shellcheck disable=SC2046,SC2086
           docker buildx imagetools create $(jq -cr --arg v "$VARIANT" --arg t "$TARGET" --arg slug "$GHCR_SLUG" '.target["\($v)-\($t)"].tags|map(select(startswith($slug))| "-t " + .)|join(" ")' <<< "${METADATA}") \
-            $(printf "%s@sha256:%s " "$GHCR_SLUG" *)
+            $(printf "${GHCR_SLUG}@sha256:%s " *)
 
       - name: Inspect image
         env:
