@@ -74,8 +74,14 @@ EOT
 RUN <<EOT sh
   set -ex
   install-php-extensions opentelemetry \
-    grpc \
     protobuf
+EOT
+
+FROM otel AS otel-grpc
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions grpc
 EOT
 
 FROM common AS otel-ffmpeg
@@ -97,6 +103,12 @@ EOT
 RUN <<EOT sh
   set -ex
   install-php-extensions opentelemetry \
-    grpc \
     protobuf
+EOT
+
+FROM otel-ffmpeg AS otel-grpc-ffmpeg
+
+RUN <<EOT sh
+  set -ex
+  install-php-extensions grpc
 EOT

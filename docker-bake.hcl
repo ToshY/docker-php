@@ -55,7 +55,9 @@ variable "TARGETS" {
         "base",
         "ffmpeg",
         "otel",
-        "otel-ffmpeg"
+        "otel-ffmpeg",
+        "otel-grpc",
+        "otel-grpc-ffmpeg"
     ]
 }
 
