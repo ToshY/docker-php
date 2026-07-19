@@ -5,8 +5,8 @@ All target images are based on a `common` base image that is build with the foll
 ### :material-package-variant: Binaries
 
 ```text
-composer:2.8
-mlocati/php-extension-installer:2.8
+composer:2.10
+mlocati/php-extension-installer:2.11
 ```
 
 ### :material-elephant: PHP extensions
