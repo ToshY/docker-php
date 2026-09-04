@@ -43,6 +43,8 @@ jobs:
     outputs:
       variants: ${{ steps.matrix.outputs.variants }}
       platforms: ${{ steps.matrix.outputs.platforms }}
+      build_matrix: ${{ steps.matrix.outputs.build_matrix }}
+      build_variants: ${{ steps.matrix.outputs.build_variants }}
       targets: ${{ steps.matrix.outputs.targets }}
       flavors: ${{ steps.matrix.outputs.flavors }}
       metadata: ${{ steps.matrix.outputs.metadata }}
@@ -154,12 +156,67 @@ jobs:
           VARIANTS="$(jq -c --arg re "$SUFFIX_REGEX" '.group.default.targets|map(sub($re; ""))|unique' <<< "${METADATA}")"
           FLAVORS="$(jq -c 'map(split("-")[-2])|unique' <<< "${VARIANTS}")"
           PLATFORMS="$(jq -c 'first(.target[]) | .platforms' <<< "${METADATA}")"
+
+          # In case an arch is missing for a base image, filter it out and warn, but continue.
+          BUILD_MATRIX='[]'
+          while read -r variant; do
+            TARGET_DEF="$(jq -c --arg v "$variant" 'first(.target | to_entries[] | select(.key | startswith($v + "-")) | .value)' <<< "${METADATA}")"
+            WANTED="$(jq -c '.platforms' <<< "${TARGET_DEF}")"
+            BASE_IMAGE="$(jq -r '.contexts["php-base"] | sub("^docker-image://"; "")' <<< "${TARGET_DEF}")"
+            case "${BASE_IMAGE}" in
+              */*) BASE_REF="${BASE_IMAGE}" ;;
+              *) BASE_REF="docker.io/library/${BASE_IMAGE}" ;;
+            esac
+
+            AVAILABLE='[]'
+            for attempt in 1 2 3; do
+              if RAW_MANIFEST="$(skopeo inspect --raw "docker://${BASE_REF}")"; then
+                # Collect "os/arch" and "os/arch/variant" so bake's `linux/arm64`
+                # matches the upstream `linux/arm64/v8` manifest entry.
+                AVAILABLE="$(jq -c '
+                  [ (.manifests // [])[]
+                    | .platform // empty
+                    | select(.architecture != "unknown")
+                    | (.os + "/" + .architecture) as $p
+                    | if (.variant // "") != "" then ($p + "/" + .variant), $p else $p end
+                  ] | unique' <<< "${RAW_MANIFEST}")"
+                break
+              fi
+              echo "Attempt ${attempt}/3 to inspect '${BASE_REF}' failed."
+              sleep "$((attempt * 5))"
+            done
+
+            if [ "$(jq 'length' <<< "${AVAILABLE}")" -eq 0 ]; then
+              echo "::warning::Could not resolve platforms for '${BASE_REF}'; keeping all platforms for '${variant}'."
+              AVAILABLE="${WANTED}"
+            fi
+
+            SUPPORTED="$(jq -c --argjson avail "${AVAILABLE}" '[.[] | select(. as $x | $avail | index($x))]' <<< "${WANTED}")"
+            SKIPPED="$(jq -r --argjson avail "${AVAILABLE}" '[.[] | select(. as $x | $avail | index($x) | not)] | join(", ")' <<< "${WANTED}")"
+            if [ -n "${SKIPPED}" ]; then
+              echo "::warning::Upstream image '${BASE_REF}' has no manifest for: ${SKIPPED}. Skipping those platforms for '${variant}'."
+            fi
+            if [ "$(jq 'length' <<< "${SUPPORTED}")" -eq 0 ]; then
+              echo "::warning::Upstream image '${BASE_REF}' provides none of the requested platforms; skipping variant '${variant}' entirely."
+              continue
+            fi
+            echo "Platforms for '${variant}': $(jq -r 'join(", ")' <<< "${SUPPORTED}")"
+
+            BUILD_MATRIX="$(jq -c --arg v "$variant" --argjson p "${SUPPORTED}" '. + [$p[] | {variant: $v, platform: .}]' <<< "${BUILD_MATRIX}")"
+          done < <(jq -r '.[]' <<< "${VARIANTS}")
+
+          # `merge` must only fan out over variants that actually produced digests,
+          # otherwise it would look for artifacts that were never uploaded.
+          BUILD_VARIANTS="$(jq -c '[.[].variant] | unique' <<< "${BUILD_MATRIX}")"
+
           {
             echo metadata="$METADATA"
             echo targets="$TARGETS"
             echo flavors="$FLAVORS"
             echo variants="$VARIANTS"
             echo platforms="$PLATFORMS"
+            echo build_matrix="$BUILD_MATRIX"
+            echo build_variants="$BUILD_VARIANTS"
           } >> "${GITHUB_OUTPUT}"
         env:
           SHA: ${{ github.sha }}
@@ -170,15 +227,15 @@ jobs:
     runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     needs:
       - prepare
-    if: ${{ needs.prepare.outputs.php_versions != '' }}
+    if: ${{ needs.prepare.outputs.php_versions != '' && needs.prepare.outputs.build_matrix != '[]' }}
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
       matrix:
-        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
-        platform: ${{ fromJson(needs.prepare.outputs.platforms) }}
+        # Variants whose upstream `php-base` image lacks a platform are excluded by the `prepare` job.
+        include: ${{ fromJson(needs.prepare.outputs.build_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -270,7 +327,7 @@ jobs:
 
   merge:
     runs-on: ubuntu-24.04
-    if: github.event_name != 'pull_request'
+    if: ${{ github.event_name != 'pull_request' && needs.prepare.outputs.build_variants != '[]' }}
     needs:
       - prepare
       - build
@@ -280,7 +337,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: ${{ fromJson(needs.prepare.outputs.variants) }}
+        variant: ${{ fromJson(needs.prepare.outputs.build_variants) }}
         target: ${{ fromJson(needs.prepare.outputs.targets) }}
     steps:
       - name: Download digests
