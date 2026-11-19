@@ -13,11 +13,11 @@ variable "VERSION" {
 }
 
 variable "PHP_VERSIONS" {
-    default = "8.2,8.3,8.4,8.5"
+    default = "8.2,8.3,8.4,8.5,8.6"
 }
 
 variable "DEFAULT_PHP_VERSION" {
-    default = "8.5"
+    default = "8.6"
 }
 
 variable "DEFAULT_FLAVOR" {
@@ -38,6 +38,7 @@ variable "PHP_OS_MAP" {
         "8.3" = "trixie"
         "8.4" = "trixie"
         "8.5" = "trixie"
+        "8.6" = "trixie"
     }
 }
 

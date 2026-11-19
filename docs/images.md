@@ -47,7 +47,7 @@ unzip
 
 !!!tip "Container"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie
+    ghcr.io/toshy/php:8.6-fpm-trixie
     ```
 
 ### FFmpeg
@@ -62,7 +62,7 @@ libimage-exiftool-perl
 
 !!!tip "Container suffixed with `-ffmpeg`"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie-ffmpeg
+    ghcr.io/toshy/php:8.6-fpm-trixie-ffmpeg
     ```
 
 !!! info
@@ -85,7 +85,7 @@ protobuf
 
 !!!tip "Container suffixed with `-otel`"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie-otel
+    ghcr.io/toshy/php:8.6-fpm-trixie-otel
     ```
 
 !!! info
@@ -119,7 +119,7 @@ libimage-exiftool-perl
 
 !!!tip "Container suffixed with `-otel-ffmpeg`"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie-otel-ffmpeg
+    ghcr.io/toshy/php:8.6-fpm-trixie-otel-ffmpeg
     ```
 
 !!! note
@@ -137,7 +137,7 @@ grpc
 
 !!!tip "Container suffixed with `-otel-grpc`"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie-otel-grpc
+    ghcr.io/toshy/php:8.6-fpm-trixie-otel-grpc
     ```
 
 !!! info
@@ -174,7 +174,7 @@ libimage-exiftool-perl
 
 !!!tip "Container suffixed with `-otel-grpc-ffmpeg`"
     ```shell
-    ghcr.io/toshy/php:8.5-fpm-trixie-otel-grpc-ffmpeg
+    ghcr.io/toshy/php:8.6-fpm-trixie-otel-grpc-ffmpeg
     ```
 
 !!! warning
