@@ -15,7 +15,7 @@
 
 ## Image and tag model you must preserve
 - Tag pattern is `<version>-<flavor>-<os>(-<target>)`; `base` is default and has no `-base` suffix.
-- `latest` is emitted only for default tuple (`8.5` + `fpm` + `trixie` + `base`) in `docker-bake.hcl`.
+- `latest` is emitted only for default tuple (`8.6` + `fpm` + `trixie` + `base`) in `docker-bake.hcl`.
 - Short tags (for example `fpm-trixie-ffmpeg`) are emitted only for the default PHP version.
 - Allowed flavor/OS pairs are constrained by `FLAVOR_OS_MAP`; avoid introducing unsupported combinations.
 

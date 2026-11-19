@@ -20,26 +20,32 @@ jobs:
           - ghcr.io/toshy/php:8.3-fpm-trixie
           - ghcr.io/toshy/php:8.4-fpm-trixie
           - ghcr.io/toshy/php:8.5-fpm-trixie
+          - ghcr.io/toshy/php:8.6-fpm-trixie
           - ghcr.io/toshy/php:8.2-fpm-trixie-ffmpeg
           - ghcr.io/toshy/php:8.3-fpm-trixie-ffmpeg
           - ghcr.io/toshy/php:8.4-fpm-trixie-ffmpeg
           - ghcr.io/toshy/php:8.5-fpm-trixie-ffmpeg
+          - ghcr.io/toshy/php:8.6-fpm-trixie-ffmpeg
           - ghcr.io/toshy/php:8.2-fpm-trixie-otel
           - ghcr.io/toshy/php:8.3-fpm-trixie-otel
           - ghcr.io/toshy/php:8.4-fpm-trixie-otel
           - ghcr.io/toshy/php:8.5-fpm-trixie-otel
+          - ghcr.io/toshy/php:8.6-fpm-trixie-otel
           - ghcr.io/toshy/php:8.2-fpm-trixie-otel-ffmpeg
           - ghcr.io/toshy/php:8.3-fpm-trixie-otel-ffmpeg
           - ghcr.io/toshy/php:8.4-fpm-trixie-otel-ffmpeg
           - ghcr.io/toshy/php:8.5-fpm-trixie-otel-ffmpeg
+          - ghcr.io/toshy/php:8.6-fpm-trixie-otel-ffmpeg
           - ghcr.io/toshy/php:8.2-fpm-trixie-otel-grpc
           - ghcr.io/toshy/php:8.3-fpm-trixie-otel-grpc
           - ghcr.io/toshy/php:8.4-fpm-trixie-otel-grpc
           - ghcr.io/toshy/php:8.5-fpm-trixie-otel-grpc
+          - ghcr.io/toshy/php:8.6-fpm-trixie-otel-grpc
           - ghcr.io/toshy/php:8.2-fpm-trixie-otel-grpc-ffmpeg
           - ghcr.io/toshy/php:8.3-fpm-trixie-otel-grpc-ffmpeg
           - ghcr.io/toshy/php:8.4-fpm-trixie-otel-grpc-ffmpeg
           - ghcr.io/toshy/php:8.5-fpm-trixie-otel-grpc-ffmpeg
+          - ghcr.io/toshy/php:8.6-fpm-trixie-otel-grpc-ffmpeg
     steps:
       - name: Scan for vulnerabilities
         uses: crazy-max/ghaction-container-scan@ffcba8deb5cb3531954cbedbbcd0179d79edf510 # v4.1.0
